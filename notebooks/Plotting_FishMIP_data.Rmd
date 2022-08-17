@@ -14,6 +14,7 @@ This notebook will accessing data from the [Inter-Sectoral Impact Model Intercom
 ```{r warning=FALSE, error=FALSE, message=FALSE}
 library(reticulate)
 library(tidyverse)
+library(metR)
 ```
 
 
@@ -21,31 +22,116 @@ library(tidyverse)
 Using the `reticulate` package. Also have the option to set the path of Python installation using `reticulate::use_python("PATH_TO_PYTHON_INSTALLATION")`.
 
 ```{r}
-use_condaenv("/opt/conda")
-```
- 
-```{python}
-# !pip install git+https://github.com/ISI-MIP/isimip-client
-# from isimip_client.client import ISIMIPClient
-# client = ISIMIPClient()
+# use_condaenv("/opt/conda")
+use_python("C:/Users/ldfierro/Anaconda3/python.exe")
+source_python("client.py")
 ```
 
 ## Loading ISIMIP Client script
 The script originally came from the ISIMIP-Client Python package. Their source code is available online in their [repository](https://github.com/ISI-MIP/isimip-client).
 
-```{r}
-#isimip = from isimip_client.client import ISIMIPClient
-#client = isimip_client.client.ISIMIPClient()
-isimip <- source_python("client.py")
-client <- ISIMIPClient()  
+```{python}
+# !pip install git+https://github.com/ISI-MIP/isimip-client
+# from isimip_client.client import ISIMIPClient
+client = ISIMIPClient()
 ```
 
-```{r}
-# search the ISIMIP repository using a search string
-# response = isimip$
-#.datasets(query='gfdl-esm4 ssp370 pr')
-client$datasets(query = 'gfdl-esm4 ssp370 pr')
-# search the ISIMIP repository using a search string
-# response = client.datasets(query='gfdl-esm4 ssp370 pr')
+## Search ISIMIP repository
+You can create a query specifying several attributes of the dataset of your interest. In this case, we are interested in Total Catch (`tc` for short), which is a type of Output Data from the ISIMIP3b simulation. For this example, we have also specified an ecological model (`EcoOcean`), the climate forcing used (`GFDL-ESM4` model) and the climate scenario (`historical`).
+
+```{python}
+query = client.datasets(simulation_round = 'ISIMIP3b',\
+                           product = 'OutputData',\
+                           climate_forcing = 'gfdl-esm4',\
+                           climate_scenario = 'historical',\
+                           model = 'ecoocean',\
+                           variable = 'tc')
 ```
+
+This query will return a Python dictionary with the results of your search. You will then be ready to inspect its contents. The `count` key of the variable containing your query tells you how many datasets meet your search requirements.
+
+```{python}
+query['count']
+```
+We can also check the metadata associated to the dataset that matches your query.
+
+```{python}
+for dataset in query['results']:
+  #Print metadata
+  print(dataset['specifiers'])
+```
+
+Files with data for the entire planet can be downloaded to disk by extracting the URLs from the dictionary. If a subset of the global data is needed, then the paths information is necessary. Here we will save both options.
+
+```{python}
+urls = []
+urls_sub = []
+for datasets in query['results']:
+  for paths in dataset['files']:
+    urls.append(paths['file_url'])
+    urls_sub.append(paths['path'])
+
+```
+
+
+## Optional step
+If you are looking for a subset of the global dataset, you can set a bounding box and only extract data for your area of interest. In this case, we will extract information for the Southern Ocean only.
+
+```{python}
+#We use the cutout function to create a bounding box for our dataset
+SO_data_URL = client.cutout(path_test, bbox=[-90, -40, -180, 180])
+```
+
+#Downloading data to disk
+We will download the data into the `data` folder.
+
+```{python}
+client.download(SO_data_URL['file_url'], path = 'data/', validate = False, extract = True)
+```
+
+## Checking contents of netcdfile
+From now on we will switch to `R` again.  
+
+```{r}
+#Provide file path to netcdf that was recently downloaded.
+data_file <- "data/ecoocean_gfdl-esm4_nobasd_historical_histsoc_default_tc_lat-90.0to-40.0lon-180.0to180.0_monthly_1950_2014.nc"
+
+#Check contents of netcdf
+GlanceNetCDF(data_file)
+```
+
+## Loading data
+
+```{r}
+tc_SO <- ReadNetCDF(data_file, vars = "tc")
+```
+
+## Manipulating data
+Calculating climatological mean for all values available between 1960 and 2020.
+
+```{r}
+NA_fill <- ncdf4::ncatt_get(x, "tc")$missing_value
+
+clim_tc <- tc_SO %>% 
+  #Add a column with years
+  mutate(year = lubridate::year(time),
+         tc = case_when(tc >= NA_fill ~ NA_real_,
+         T ~ tc)) %>% 
+  #Extracting data between 1960 and 2020
+  filter(year >= 1960 & year <= 2020) %>% 
+  #Calculating climatological mean for total catch per pixel
+  group_by(lat, lon) %>% 
+  summarise(mean_tc = mean(tc, na.rm = F))
+```
+
+## Plotting climatology
+
+```{r}
+clim_tc %>% 
+  ggplot(aes(y = lat, x = lon))+
+  geom_raster(aes(fill = mean_tc))
+
+```
+
+
 
