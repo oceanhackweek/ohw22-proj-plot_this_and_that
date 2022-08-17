@@ -1,0 +1,11 @@
+---
+title: "Accessing and plotting FishMIP data"
+author: "Denisse Fierro Arcos"
+date: "2022-08-17"
+output: 
+  html_document: default
+  github_document: default
+---
+
+# Introduction
+This notebook will accessing data from the [Inter-Sectoral Impact Model Intercomparison Project (ISIMIP) Repository](https://data.isimip.org/). There are various datasets available, but as example we will be using 
