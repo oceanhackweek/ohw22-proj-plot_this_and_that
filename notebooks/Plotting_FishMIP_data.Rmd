@@ -8,4 +8,44 @@ output:
 ---
 
 # Introduction
-This notebook will accessing data from the [Inter-Sectoral Impact Model Intercomparison Project (ISIMIP) Repository](https://data.isimip.org/). There are various datasets available, but as example we will be using 
+This notebook will accessing data from the [Inter-Sectoral Impact Model Intercomparison Project (ISIMIP) Repository](https://data.isimip.org/). There are various datasets available, but as example we will be accessing Output Data > Fisheries & Marine Ecosystems (global) sector > ISIMIP3b simulation.
+
+## Loading libraries
+```{r warning=FALSE, error=FALSE, message=FALSE}
+library(reticulate)
+library(tidyverse)
+```
+
+
+## Set your conda environment
+Using the `reticulate` package. Also have the option to set the path of Python installation using `reticulate::use_python("PATH_TO_PYTHON_INSTALLATION")`.
+
+```{r}
+use_condaenv("/opt/conda")
+```
+ 
+```{python}
+# !pip install git+https://github.com/ISI-MIP/isimip-client
+# from isimip_client.client import ISIMIPClient
+# client = ISIMIPClient()
+```
+
+## Loading ISIMIP Client script
+The script originally came from the ISIMIP-Client Python package. Their source code is available online in their [repository](https://github.com/ISI-MIP/isimip-client).
+
+```{r}
+#isimip = from isimip_client.client import ISIMIPClient
+#client = isimip_client.client.ISIMIPClient()
+isimip <- source_python("client.py")
+client <- ISIMIPClient()  
+```
+
+```{r}
+# search the ISIMIP repository using a search string
+# response = isimip$
+#.datasets(query='gfdl-esm4 ssp370 pr')
+client$datasets(query = 'gfdl-esm4 ssp370 pr')
+# search the ISIMIP repository using a search string
+# response = client.datasets(query='gfdl-esm4 ssp370 pr')
+```
+
