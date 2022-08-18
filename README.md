@@ -8,7 +8,7 @@ Develop a collection of notebooks in Python and R to create ocean plots based on
 
 ### Collaborators
 Australia OHW: Nick Mortimer, Yuhang Liu, Natalia Ribeiro, Leo Laiolo, Craig Steinberg, Tom Armstrong, Xinlong Liu, Denisse Fierro Arcos, Mussa Ngosha.  
-Other OHW satellite events: Marine Lebrec, Gammon Koval.
+Other OHW satellite events: Marine Lebrec, Gammon Koval, Liz Ferguson.
 
 ---
 
