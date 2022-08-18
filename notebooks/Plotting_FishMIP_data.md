@@ -20,6 +20,7 @@ Denisse Fierro Arcos
             manipulation](#loading-dataset-as-dataframe-for-easy-manipulation)
         -   [Calculating climatology](#calculating-climatology)
         -   [Plotting climatology](#plotting-climatology)
+        -   [Obtaining timeseries](#obtaining-timeseries)
 
 # Introduction
 
@@ -53,6 +54,7 @@ library(metR)
 ``` r
 library(lubridate)
 library(raster)
+library(sf)
 ```
 
 ### Setting up Python for use in an R notebook
@@ -278,8 +280,11 @@ plot(tc_raster)
 This data type allows us to use the `tidyverse` to make calculations
 easily.
 
+As seen from plotting the raster above, we must first mask
+`No Data Values` before we carry out any calculations.
+
 ``` r
-#Loading dataset
+#Loading dataset as data frame
 tc_SO <- ReadNetCDF(data_file, vars = "tc") %>% 
   #Masking No Data Values
   mutate(tc = case_when(tc >= NA_val ~ NA_real_,
@@ -309,22 +314,47 @@ clim_tc <- tc_SO %>%
 ### Plotting climatology
 
 ``` r
+#Accessing coastline shapefiles
+land <- rnaturalearth::ne_countries(returnclass = "sf") %>% 
+  #Extracting land within data boundaries
+  st_crop(c(ymin = -90, ymax = -40, 
+            xmin = -180, xmax = 180)) 
+```
+
+    ## although coordinates are longitude/latitude, st_intersection assumes that they are planar
+
+    ## Warning: attribute variables are assumed to be spatially constant throughout all
+    ## geometries
+
+``` r
+#Plotting data
 clim_tc %>% 
   ggplot(aes(y = lat, x = lon))+
-  geom_raster(aes(fill = mean_tc))
+  geom_contour_fill(aes(z = mean_tc, fill = stat(level)),
+                        binwidth = 2)+
+  scale_fill_distiller(palette = "YlOrBr", 
+                       direction = 1, 
+                       super = ScaleDiscretised)+
+  guides(fill = guide_colorbar(title.position = "top",
+                               title.hjust =  0.5,
+                               barwidth = 15))+
+  geom_sf(data = land, inherit.aes = F,
+          fill = "grey", color = "black")+
+  labs(x = NULL, y = NULL, 
+       fill = "Total Catch in g m-2")+
+  theme_bw()+
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom")
 ```
 
 ![](Plotting_FishMIP_data_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
-``` r
-clim_tc <- tc_SO %>% 
-  #Add a column with years
-  mutate(year = lubridate::year(time)) %>% 
-  #Extracting data between 1960 and 2020
-  filter(year >= 1960 & year <= 2020) %>% 
-  #Calculating climatological mean for total catch per pixel
-  group_by(lat, lon) %>% 
-  summarise(mean_tc = mean(tc, na.rm = F))
-```
+### Obtaining timeseries
 
-    ## `summarise()` has grouped output by 'lat'. You can override using the `.groups` argument.
+``` r
+# tc_SO %>% 
+#   #Calculating climatological mean for total catch per pixel
+#   group_by(time) %>% 
+#   summarise(mean_tc = mean(tc, na.rm = F)) %>% View()
+#   ggplot() %>% 
+```

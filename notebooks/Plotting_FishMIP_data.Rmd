@@ -236,11 +236,11 @@ clim_tc %>%
 
 
 ```{r}
-tc_SO %>% 
-  #Calculating climatological mean for total catch per pixel
-  group_by(time) %>% 
-  summarise(mean_tc = mean(tc, na.rm = F)) %>% View()
-  ggplot() %>% 
+# tc_SO %>% 
+#   #Calculating climatological mean for total catch per pixel
+#   group_by(time) %>% 
+#   summarise(mean_tc = mean(tc, na.rm = F)) %>% View()
+#   ggplot() %>% 
   
 
 
