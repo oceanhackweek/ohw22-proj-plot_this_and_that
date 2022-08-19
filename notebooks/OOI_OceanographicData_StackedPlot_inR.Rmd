@@ -11,7 +11,7 @@ output:
     toc_float: yes
 ---
 
-This notebook provides you with an example of how to create a stacked plot of oceanographic data variables in R. The specific data used in this example come from the Ocean Observatories Intiative's suite of oceanographic data off of Newport, Oregon (Cabled Endurance Array; oceanobservatories.org), and were queried using the Data Explorer (dataexplorer.oceanobservatories.org) and exported into csv format. 
+This notebook provides you with an example of how to create a stacked plot of oceanographic data variables in R. The specific data used in this example come from the Ocean Observatories Intiative's suite of oceanographic data off of Newport, Oregon ([Cabled Endurance Array]( oceanobservatories.org)), and were queried using the [Data Explorer](dataexplorer.oceanobservatories.org) and exported into csv format. 
 
 Data used in this example were part of a project evaluating a period of April, 2018, and include the following environmental variables: sea water temperature (Degrees C), partial pressure of CO2 (uatm), Salinity (PSS), and dissolved O2 (umol/L). The final product in this example is a stacked set of line graphs that retain the scale specific to each dataset.
 
@@ -27,18 +27,26 @@ library(scales)
 library(gridExtra)
 library(grid)
 library(plotly)
-
+#Suggest add by Denisse
+library(lubridate) #Library to deal with datetime data
 ```
 
 Next we will load in the data for each of the four variables (note: download all four csv files from and set working directory locally when on your own computer!). We will then need to use the as.POSIXct function to convert the date/time into a format that allows you to display along the x-axis.
 
+** Denisse comment: Personally, I think it is better to work with a Project, this way you can provide relative paths and share your work a lot easier with others. **
+
 1. Start first with the temperature..
 
 ```{r chunk 2}
+#Note change in file path. Data was stored under the "data" folder
+Temp <- read_csv("../data/ooi-ce04osbp-lj01c-SeaWaterTemp580m_April2018.csv") %>% 
+  #Suggest add Denisse
+  mutate(Date_Time = mdy_hm(Date_Time),
+         Date = mdy(Date))
 
-Temp <- read_csv("ooi-ce04osbp-lj01c-SeaWaterTemp580m_April2018.csv")
-Temp$Date_Time <- as.POSIXct(Temp$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
-Temp$Day <- as.Date(Temp$Date, format = "%m/%d/%Y")
+#Suggest remove by Denisse
+# Temp$Date_Time <- as.POSIXct(Temp$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
+# Temp$Day <- as.Date(Temp$Date, format = "%m/%d/%Y")
 
 # Check all is good
 Temp
@@ -49,9 +57,15 @@ Temp
 
 ```{r chunk 3}
 
-PCO2 <- read_csv("ooi-ce04osbp-lj01c-PCO2_April2018.csv")
-PCO2$Date_Time <- as.POSIXct(PCO2$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
-PCO2$Date <- as.Date(PCO2$Date, format = "%m/%d/%Y")
+#Note change in file path. Data was stored under the "data" folder
+PCO2 <- read_csv("../data/ooi-ce04osbp-lj01c-PCO2_April2018.csv") %>% 
+  #Suggest add Denisse
+  mutate(Date_Time = mdy_hm(Date_Time),
+         Date = mdy(Date))
+
+#Suggest remove by Denisse
+# PCO2$Date_Time <- as.POSIXct(PCO2$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
+# PCO2$Date <- as.Date(PCO2$Date, format = "%m/%d/%Y")
 
 # Check all is good
 PCO2
@@ -62,10 +76,15 @@ PCO2
 3. And the salinity: 
 
 ```{r chunk 4}
+#Note change in file path. Data was stored under the "data" folder
+Salinity <- read_csv("../data/ooi-ce04osbp-lj01c-Salinity580m_April2018.csv") %>% 
+  #Suggest add Denisse
+  mutate(Date_Time = mdy_hm(Date_Time),
+         Date = mdy(Date))
 
-Salinity <- read_csv("ooi-ce04osbp-lj01c-Salinity580m_April2018.csv")
-Salinity$Date_Time <- as.POSIXct(Salinity$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
-Salinity$Date <- as.Date(Salinity$Date, format = "%m/%d/%Y")
+#Suggest remove by Denisse
+# Salinity$Date_Time <- as.POSIXct(Salinity$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
+# Salinity$Date <- as.Date(Salinity$Date, format = "%m/%d/%Y")
 
 # Check all is good
 Salinity
@@ -77,15 +96,20 @@ Salinity
 
 ```{r chunk 5}
 
-DisO2 <- read_csv("ooi-ce04osbp-lj01c-DissolvedOxygen_April2018.csv")
-DisO2$Date_Time <- as.POSIXct(DisO2$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
-DisO2$Date <- as.Date(DisO2$Date, format = "%m/%d/%Y")
+#Note change in file path. Data was stored under the "data" folder
+DisO2 <- read_csv("../data/ooi-ce04osbp-lj01c-DissolvedOxygen_April2018.csv") %>% 
+  #Suggest add Denisse
+  mutate(Date_Time = mdy_hm(Date_Time),
+         Date = mdy(Date))
+
+#Suggest remove by Denisse
+# DisO2$Date_Time <- as.POSIXct(DisO2$Date_Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
+# DisO2$Date <- as.Date(DisO2$Date, format = "%m/%d/%Y")
 
 # Check all is good
 DisO2
 
 ```
-
 
 ## Plotting the Data
 
@@ -101,12 +125,13 @@ We will create each of the line graph figures separately:
 
 TempLine <- ggplot(Temp, aes(x = Date_Time, y = sea_water_temp_degC)) +
   geom_line(colour = "dark red", size = 1) +
-  scale_x_datetime(labels = date_format("%b %d")) +
+  # scale_x_datetime(labels = date_format("%b %d")) +
   labs(x = "Date (UTC)", y = paste0("Sea Water Temp", "\n", "(Degrees C)")) +
   theme(text = element_text(size = 14)) +
   theme(axis.title.y = element_text(size = 12)) +
-  theme(axis.title.x = element_blank(), 
-        axis.text.x = element_blank(), axis.title.y = element_text(margin=margin(r=20)))
+  theme(#axis.title.x = element_blank(), #this deletes the x axis
+        # axis.text.x = element_blank(), 
+        axis.title.y = element_text(margin=margin(r=20)))
 
 TempLine
 
@@ -123,7 +148,7 @@ PCO2Line <- ggplot(PCO2, aes(x = Date_Time, y = pp_CO2)) +
   labs(x = "Date (UTC)", y = paste0("Partial Pressure", "\n", "CO2 (uatm)")) +
   theme(text = element_text(size = 14)) +
   theme(axis.title.y = element_text(size = 12)) +
-  theme(axis.title.x = element_blank(), 
+  theme(axis.title.x = element_blank(), #As above, this deletes the x axis
         axis.text.x = element_blank(), axis.title.y = element_text(margin=margin(r=20)))
 
 PCO2Line
