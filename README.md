@@ -24,8 +24,7 @@ Look at the Ocean current website and see the vast range of plots, these are all
 
 ### Datasets/Supporting Information
 * [Data sets](http://imos-data.s3-website-ap-southeast-2.amazonaws.com/?prefix=IMOS/SRS/SST/ghrsst/L3S-1d/dn/) and [infrastructure support](http://imos-data.s3-website-ap-southeast-2.amazonaws.com/?prefix=IMOS/OceanCurrent/GSLA/NRT00/2022/)
-* [Various scripts for our Python User Group](https://github.com/UNSW-MATH/python_group
-https://github.com/aodn/imos-user-code-library)
+* Various scripts for our Python User Group [here](https://github.com/UNSW-MATH/python_group) and [here](https://github.com/aodn/imos-user-code-library).
 * [R scripts on how to access EDRDAPP data](https://github.com/virginiagarciaalonso/useR_2022_sst) - Slides and poster available in English and Spanish.
 * [The Inter-Sectoral Impact Model Intercomparison Project (ISIMIP)](https://www.isimip.org/).
 
