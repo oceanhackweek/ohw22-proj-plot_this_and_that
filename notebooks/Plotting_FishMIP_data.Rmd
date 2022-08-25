@@ -79,6 +79,7 @@ We can also check the additional metadata associated stored in `query['results']
 for dataset in query['results']:
   #Print metadata for each entry
   print(dataset['specifiers'])
+
 ```
 
 It is worth noting that the files in the search results include data for the entire planet. If you would like to 
@@ -104,7 +105,7 @@ If you are looking for a subset of the global dataset, you can set a bounding bo
 
 ```{python}
 #We use the cutout function to create a bounding box for our dataset
-SO_data_URL = client.cutout(urls_sub, bbox=[-90, -40, -180, 180])
+SO_data_URL = client.cutout(urls_sub, bbox = [-90, -40, -180, 180])
 ```
 
 ### Downloading data to disk
@@ -129,11 +130,16 @@ client.download(url = SO_data_URL['file_url'], \
                 path = '../data/', validate = False, \
                 extract = True)
 
-#To download the global data
-# client.download(url = urls[0], \
-#                 path = '../data/', validate = False, \
-#                 extract = True)
 ```
+
+To download global data.
+```{python}
+client.download(url = urls[0], \
+                path = '../data/', validate = False, \
+                extract = True)
+                
+```
+
 
 ## R-based code
 You are now ready to load the dataset into `R` to make any calculations and visualise results.
